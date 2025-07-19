@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  backend:
+    container_name: finance-service
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - '${PORT_BACK-8080}:3000'
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST:-finance_db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER:-user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-finance_db}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+    depends_on:
+      - finance_db
+      - redis
+    volumes:
+      - .:/app/
+
+  finance_db:
+    image: postgres:latest
+    container_name: finance_db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-finance_db}
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+
+volumes:
+  db-data:
+  redis-data:
